@@ -1,113 +1,152 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from 'react';
+import { getNEOData } from './services/nasaAPI';
 
 export default function Home() {
+  const [asteroids, setAsteroids] = useState([]);
+  const [error, setError] = useState(null);
+  const [loadedImages, setLoadedImages] = useState({}); // Track loaded images
+  const [loadedCount, setLoadedCount] = useState(0); // Count loaded images
+  const [showContent, setShowContent] = useState(false); // Control visibility of content
+  const [hoveredAsteroid, setHoveredAsteroid] = useState(null); // Track which asteroid is hovered
+
+  useEffect(() => {
+    async function fetchAsteroids() {
+      try {
+        console.log("Fetching NEO data...");
+        const data = await getNEOData('2024-08-22', '2024-08-29');
+        console.log("Fetched NEO data:", data);
+
+        if (data && data.near_earth_objects) {
+          const allAsteroids = [];
+
+          Object.keys(data.near_earth_objects).forEach(date => {
+            allAsteroids.push(...data.near_earth_objects[date]);
+          });
+
+          const sortedAsteroids = allAsteroids.sort((a, b) => {
+            const distanceA = parseFloat(a.close_approach_data[0].miss_distance.miles);
+            const distanceB = parseFloat(b.close_approach_data[0].miss_distance.miles);
+            return distanceA - distanceB;
+          });
+
+          const top5Asteroids = sortedAsteroids.slice(0, 5);
+          
+          setAsteroids(top5Asteroids);
+        } else {
+          console.warn("No 'near_earth_objects' found in data:", data);
+        }
+      } catch (error) {
+        console.error("Error fetching NEO data:", error);
+        setError("Failed to fetch NEO data");
+      }
+    }
+
+    fetchAsteroids();
+  }, []);
+
+  useEffect(() => {
+    // Check if all images are loaded and then show content
+    if (loadedCount === asteroids.length) {
+      setShowContent(true);
+    }
+  }, [loadedCount, asteroids.length]);
+
+  const kmToMiles = (km) => km * 0.621371;
+  const kmToFeet = (km) => km * 3280.84;
+
+  const roundUpDistance = (distance) => Math.ceil(parseFloat(distance));
+  const roundUpVelocity = (velocity) => Math.ceil(parseFloat(velocity));
+
+  const formatNumberWithCommas = (number) => {
+    return number.toLocaleString();
+  };
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  // Calculate the orbit distance based on index
+  const getOrbitDistance = (index) => {
+    const minDistance = 150; // Minimum distance from Earth
+    const maxDistance = 400; // Maximum distance from Earth
+    const range = maxDistance - minDistance;
+    const step = range / (asteroids.length - 1);
+    return minDistance + step * index;
+  };
+
+  // Calculate the orbit speed based on velocity
+  const getOrbitSpeed = (velocity) => {
+    // Normalize velocity to determine duration
+    const maxVelocity = 100000; // Example maximum velocity
+    const minDuration = 5; // Minimum duration of orbit in seconds
+    const maxDuration = 30; // Maximum duration of orbit in seconds
+    const duration = minDuration + (1 - (velocity / maxVelocity)) * (maxDuration - minDuration);
+    return `${duration}s`; // Convert to seconds
+  };
+
+  const handleImageLoad = (index) => {
+    setLoadedImages(prevState => {
+      const newState = { ...prevState, [index]: true };
+      setLoadedCount(prevCount => prevCount + 1);
+      return newState;
+    });
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <div className='home'>
+      <div className='site-info-wrapper'>
+        <h1>Asteroid Tracker</h1>
+        <p>These are the 5 closest asteroids to Planet Earth. See how close we are to oblivion!</p>
+
+        <p className='minor'>*Data pulled in from NASA and updated daily</p>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      {!showContent && (
+        <div className='loading-message'>Load Asteroids...</div>
+      )}
+      {showContent && (
+        <>
+          <img src='/assets/earth.png' alt='Earth' className='earth-image' />
+          {asteroids.map((asteroid, index) => (
+            <div
+              key={index}
+              className='asteroid-wrapper'
+              style={{
+                left: '50%',
+                top: '50%',
+                transform: `translate(-50%, -50%)`, // Center the wrapper
+              }}
+              onMouseEnter={() => setHoveredAsteroid(asteroid)} // Set hovered asteroid
+              onMouseLeave={() => setHoveredAsteroid(null)} // Reset hovered asteroid
+            >
+              <img
+                src={`/assets/a${index + 2}.png`}
+                alt={`Asteroid ${index + 2}`}
+                className='asteroid-image'
+                style={{
+                  animationDelay: `${index * 2}s`, // Stagger animation delay
+                  '--orbit-distance': `${getOrbitDistance(index)}px`, // Set orbit distance
+                  '--orbit-speed': getOrbitSpeed(asteroid.close_approach_data[0].relative_velocity.miles_per_hour), // Set orbit speed
+                  display: loadedImages[index] ? 'block' : 'none', // Hide until loaded
+                }}
+                onLoad={() => handleImageLoad(index)}
+              />
+            </div>
+          ))}
+          {hoveredAsteroid && (
+            <div className='asteroid-info'>
+              <h3>ASTEROID NAME: {hoveredAsteroid.name}</h3>
+              <p>Date of Closest Approach: {formatDate(hoveredAsteroid.close_approach_data[0].close_approach_date)}</p>
+              <p>Miss Distance: {formatNumberWithCommas(roundUpDistance(hoveredAsteroid.close_approach_data[0].miss_distance.miles))} miles</p>
+              <p>Velocity: {formatNumberWithCommas(roundUpVelocity(hoveredAsteroid.close_approach_data[0].relative_velocity.miles_per_hour))} miles/h</p>
+              <p>Estimated Diameter: {formatNumberWithCommas(kmToFeet(hoveredAsteroid.estimated_diameter.meters.estimated_diameter_max))} ft</p>
+            </div>
+          )}
+        </>
+      )}
+      {error && <p>{error}</p>}
+      {asteroids.length === 0 && !error && !showContent && <p>Loading...</p>}
+    </div>
   );
 }

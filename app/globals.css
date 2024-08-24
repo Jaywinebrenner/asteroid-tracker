@@ -1,33 +1,111 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  margin: 0;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+.home {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('/assets/space.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.earth-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px; /* Adjust size as needed */
+  height: auto;
+  transform: translate(-50%, -50%);
+  z-index: 99999;
+}
+
+.asteroid-image {
+  position: absolute;
+  width: 50px; /* Adjust size as needed */
+  height: auto;
+  transform-origin: center;
+  animation: orbit var(--orbit-speed) linear infinite;
+  --orbit-distance: 150px; /* Use the CSS variable for orbit distance */
+  transition: transform 0.3s ease; /* Smooth transition for hover effect */
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(var(--orbit-distance)) rotate(0deg);
   }
+  100% {
+    transform: rotate(360deg) translateX(var(--orbit-distance)) rotate(-360deg);
+  }
+}
+
+.asteroid-info {
+  position: fixed; /* Position it relative to the entire viewport */
+  top: 10px;       /* Place it in the top-right corner */
+  right: 10px;
+  background-color: white;/* Semi-transparent background */
+  color: black;     /* Ensure text is visible */
+  padding: 15px;    /* Add some padding for spacing */
+  border-radius: 8px; /* Rounded corners for better aesthetics */
+  z-index: 1000;    /* Ensure it appears on top of other elements */
+  display: block;   /* Ensure it's visible */
+}
+
+
+.asteroid-wrapper {
+  position: absolute;
+  transform: translate(-50%, -50%); /* Center the wrapper */
+}
+
+.asteroid-image:hover {
+  animation-play-state: paused; /* Pause animation on hover */
+}
+
+.asteroid-wrapper:hover .asteroid-info {
+  display: block; /* Show the information on hover */
+}
+
+.loading-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  z-index: 10;
+}
+
+.site-info-wrapper {
+  position: absolute;
+  width: 280px;
+  left: 20px;
+  top: 20px;
+  padding: 12px;
+  background-color: white;
+}
+
+.site-info-wrapper h1, .site-info-wrapper p {
+  display: inline-block;
+  margin: 0;
+  }
+.site-info-wrapper h1 {
+  display: inline-block;
+  margin-top: 0;
+  margin-bottom: 8px;;
+  }
+
+.site-info-wrapper p {
+  margin-bottom: 0;
+
+}
+
+
+.site-info-wrapper .minor {
+  margin-bottom: 8px;;
+  font-size: 11px;
+  font-style: italic;
 }
