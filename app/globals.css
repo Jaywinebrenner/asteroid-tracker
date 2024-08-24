@@ -58,6 +58,10 @@ body {
   transform: translate(-50%, -50%); /* Center the wrapper */
 }
 
+.asteroid-info p {
+  padding-bottom: 0;
+}
+
 .asteroid-image:hover {
   animation-play-state: paused; /* Pause animation on hover */
 }

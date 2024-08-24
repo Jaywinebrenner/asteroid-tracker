@@ -98,7 +98,7 @@ export default function Home() {
     <div className='home'>
       <div className='site-info-wrapper'>
         <h1>Asteroid Tracker</h1>
-        <p>These are the 5 closest asteroids to Planet Earth. See how close we are to oblivion!</p>
+        <p>These are the 5 closest asteroids to Planet Earth. See how close we are to interstellar annihilation!</p>
 
         <p className='minor'>*Data pulled in from NASA and updated daily</p>
       </div>
