@@ -14,7 +14,15 @@ export default function Home() {
     async function fetchAsteroids() {
       try {
         console.log("Fetching NEO data...");
-        const data = await getNEOData('2024-08-22', '2024-08-29');
+        const today = new Date();
+        const startDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        
+        const oneWeekLater = new Date(today);
+        oneWeekLater.setDate(today.getDate() + 7);
+        const endDate = oneWeekLater.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        
+        const data = await getNEOData(startDate, endDate);
+        
         console.log("Fetched NEO data:", data);
 
         if (data && data.near_earth_objects) {
@@ -100,7 +108,7 @@ export default function Home() {
         <h1>Asteroid Tracker</h1>
         <p>These are the 5 closest asteroids to Planet Earth. See how close we are to interstellar annihilation!</p>
 
-        <p className='minor'>*Data pulled in from NASA and updated daily</p>
+        <p className='minor'>*Data pulled in from the NASA API and updated weekly</p>
       </div>
       {!showContent && (
         <div className='loading-message'>Load Asteroids...</div>

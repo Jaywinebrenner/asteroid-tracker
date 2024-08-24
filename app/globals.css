@@ -110,6 +110,89 @@ body {
 
 .site-info-wrapper .minor {
   margin-bottom: 8px;;
+  margin-top: 6px;
   font-size: 11px;
   font-style: italic;
 }
+
+
+
+
+@media(max-width: 800px){
+  .asteroid-wrapper {
+    position: relative;
+  }
+}
+
+@media(max-width: 800px){
+  .asteroid-image {
+    animation: none;
+  }
+}
+
+
+@media(max-width: 800px){
+/* INFO */
+  .home div:nth-child(1) {
+    position: absolute;
+    width: 230px;
+    top: 20px; /* Keep this value as per your requirement */
+    left: 50%; /* Move the element's left edge to the center */
+    transform: translateX(-50%); 
+    padding: 12px;
+  }
+  .home div:nth-child(1) h1 {
+    font-size: 20px;
+  }
+  .home div:nth-child(1) p {
+    font-size: 13px;
+  }
+  .home div:nth-child(1) .minor {
+    font-size: 11px;
+  }
+  
+  /* EARTH */
+  .home img:nth-child(2)  {
+    top: 230px;
+    width: 100px;
+  }
+  
+  .home div:nth-child(3)  {
+    top: 300px!important;
+    left: 55%!important;
+  }
+  
+  .home div:nth-child(4) {
+    top: 300px!important;
+    left: 75%!important;
+  }
+  
+  .home div:nth-child(5) {
+    top: 300px!important;
+    left: 93%!important;
+  }
+  
+  .home div:nth-child(6) {
+    top: 300px!important;
+    left: 115%!important;
+  }
+  
+  .home div:nth-child(7) {
+    top: 300px!important;
+    left: 135%!important;
+  }
+
+  .asteroid-info {
+    top: 380px;
+    left: 34%; /* Position the element's left edge at the center of the viewport */
+    transform: translateX(-50%); /* Shift it back by half of its width to center it horizontally */
+    background-color: white;
+    color: black;
+    padding: 15px;
+    border-radius: 8px;
+    z-index: 1000;
+    display: block;
+  }
+
+}
+
