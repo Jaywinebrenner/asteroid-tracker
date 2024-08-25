@@ -5,29 +5,25 @@ import { getNEOData } from './services/nasaAPI';
 export default function Home() {
   const [asteroids, setAsteroids] = useState([]);
   const [error, setError] = useState(null);
-  const [loadedImages, setLoadedImages] = useState({}); // Track loaded images
-  const [loadedCount, setLoadedCount] = useState(0); // Count loaded images
-  const [showContent, setShowContent] = useState(false); // Control visibility of content
-  const [hoveredAsteroid, setHoveredAsteroid] = useState(null); // Track which asteroid is hovered
+  const [loadedImages, setLoadedImages] = useState({});
+  const [loadedCount, setLoadedCount] = useState(0);
+  const [showContent, setShowContent] = useState(false);
+  const [hoveredAsteroid, setHoveredAsteroid] = useState(null);
 
   useEffect(() => {
     async function fetchAsteroids() {
       try {
-        console.log("Fetching NEO data...");
         const today = new Date();
-        const startDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        const startDate = today.toISOString().split('T')[0];
         
         const oneWeekLater = new Date(today);
         oneWeekLater.setDate(today.getDate() + 7);
-        const endDate = oneWeekLater.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        const endDate = oneWeekLater.toISOString().split('T')[0];
         
         const data = await getNEOData(startDate, endDate);
-        
-        console.log("Fetched NEO data:", data);
 
         if (data && data.near_earth_objects) {
           const allAsteroids = [];
-
           Object.keys(data.near_earth_objects).forEach(date => {
             allAsteroids.push(...data.near_earth_objects[date]);
           });
@@ -45,7 +41,6 @@ export default function Home() {
           console.warn("No 'near_earth_objects' found in data:", data);
         }
       } catch (error) {
-        console.error("Error fetching NEO data:", error);
         setError("Failed to fetch NEO data");
       }
     }
@@ -54,7 +49,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Check if all images are loaded and then show content
     if (loadedCount === asteroids.length) {
       setShowContent(true);
     }
@@ -75,23 +69,24 @@ export default function Home() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Calculate the orbit distance based on index
+  const removeParentheses = (name) => {
+    return name.replace(/[()]/g, ""); // Removes both opening and closing parentheses
+  };
+
   const getOrbitDistance = (index) => {
-    const minDistance = 150; // Minimum distance from Earth
-    const maxDistance = 400; // Maximum distance from Earth
+    const minDistance = 150;
+    const maxDistance = 400;
     const range = maxDistance - minDistance;
     const step = range / (asteroids.length - 1);
     return minDistance + step * index;
   };
 
-  // Calculate the orbit speed based on velocity
   const getOrbitSpeed = (velocity) => {
-    // Normalize velocity to determine duration
-    const maxVelocity = 100000; // Example maximum velocity
-    const minDuration = 5; // Minimum duration of orbit in seconds
-    const maxDuration = 30; // Maximum duration of orbit in seconds
+    const maxVelocity = 100000;
+    const minDuration = 5;
+    const maxDuration = 30;
     const duration = minDuration + (1 - (velocity / maxVelocity)) * (maxDuration - minDuration);
-    return `${duration}s`; // Convert to seconds
+    return `${duration}s`;
   };
 
   const handleImageLoad = (index) => {
@@ -107,7 +102,6 @@ export default function Home() {
       <div className='site-info-wrapper'>
         <h1>Asteroid Tracker</h1>
         <p>These are the 5 closest asteroids to Planet Earth. See how close we are to interstellar annihilation!</p>
-
         <p className='minor'>*Data pulled in from the NASA API and updated weekly</p>
       </div>
       {!showContent && (
@@ -123,20 +117,20 @@ export default function Home() {
               style={{
                 left: '50%',
                 top: '50%',
-                transform: `translate(-50%, -50%)`, // Center the wrapper
+                transform: `translate(-50%, -50%)`,
               }}
-              onMouseEnter={() => setHoveredAsteroid(asteroid)} // Set hovered asteroid
-              onMouseLeave={() => setHoveredAsteroid(null)} // Reset hovered asteroid
+              onMouseEnter={() => setHoveredAsteroid(asteroid)}
+              onMouseLeave={() => setHoveredAsteroid(null)}
             >
               <img
                 src={`/assets/a${index + 2}.png`}
                 alt={`Asteroid ${index + 2}`}
                 className='asteroid-image'
                 style={{
-                  animationDelay: `${index * 2}s`, // Stagger animation delay
-                  '--orbit-distance': `${getOrbitDistance(index)}px`, // Set orbit distance
-                  '--orbit-speed': getOrbitSpeed(asteroid.close_approach_data[0].relative_velocity.miles_per_hour), // Set orbit speed
-                  display: loadedImages[index] ? 'block' : 'none', // Hide until loaded
+                  animationDelay: `${index * 2}s`,
+                  '--orbit-distance': `${getOrbitDistance(index)}px`,
+                  '--orbit-speed': getOrbitSpeed(asteroid.close_approach_data[0].relative_velocity.miles_per_hour),
+                  display: loadedImages[index] ? 'block' : 'none',
                 }}
                 onLoad={() => handleImageLoad(index)}
               />
@@ -144,7 +138,7 @@ export default function Home() {
           ))}
           {hoveredAsteroid && (
             <div className='asteroid-info'>
-              <h3>ASTEROID NAME: {hoveredAsteroid.name}</h3>
+              <h3>ASTEROID NAME: {removeParentheses(hoveredAsteroid.name)}</h3>
               <p>Date of Closest Approach: {formatDate(hoveredAsteroid.close_approach_data[0].close_approach_date)}</p>
               <p>Miss Distance: {formatNumberWithCommas(roundUpDistance(hoveredAsteroid.close_approach_data[0].miss_distance.miles))} miles</p>
               <p>Velocity: {formatNumberWithCommas(roundUpVelocity(hoveredAsteroid.close_approach_data[0].relative_velocity.miles_per_hour))} miles/h</p>
